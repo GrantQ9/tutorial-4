@@ -1,0 +1,17 @@
+---
+title: "Models"
+author: "Grant Quattlebaum"
+format: html
+execute: 
+  echo: false
+---
+
+We've looked at data from a YouGov presidential poll from March of nearly 1600 US adult citizens and will use it to see what percentage of voters in the 2024 presidential election will vote for Biden.
+
+```{r}
+#| label: setup
+#| message: false
+
+library(tidyverse)
+```
+
