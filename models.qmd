@@ -4,14 +4,57 @@ author: "Grant Quattlebaum"
 format: html
 execute: 
   echo: false
+  warning: false
 ---
 
-We've looked at data from a YouGov presidential poll from March of nearly 1600 US adult citizens and will use it to see what percentage of voters in the 2024 presidential election will vote for Biden. We're not confident this poll is representative of the broader voting population, but we still want to see what can be gleaned from it. We're not worried about stability or unconfoundedness, though.
+
 
 ```{r}
 #| label: setup
 #| message: false
 
+library(brms)
 library(tidyverse)
+library(tidybayes)
+library(gtsummary)
+```
+
+```{r}
+#| label: model
+#| cache: true
+poll_data <- tibble(biden = c(rep(1, 655), 
+                              rep(0, 904)))
+ndata <- tibble(.rows = 1)
+
+fit_bern <- brm(formula = biden ~ 1, 
+  data = poll_data, 
+  family = bernoulli(),
+  refresh = 0, 
+  silent = 2, 
+  seed = 9)
+```
+
+```{r}
+#| label: plot
+
+fit_bern |> add_epred_draws(newdata = ndata) |>
+  select(.epred) |>
+  ggplot(aes(x = .epred)) +
+    geom_density(aes(y = after_stat(count / sum(count)))) + 
+    scale_x_continuous(labels = scales::percent_format()) + 
+    scale_y_continuous(labels = scales::percent_format()) +
+    labs(
+      title = "Posterior Distribution",
+      subtitle = "The value is almost always less than 50%",
+      x = "Proportion of Biden Votes",
+      y = "Probability")
+```
+
+We've looked at data from a YouGov presidential poll from March of nearly 1600 US adult citizens and will use it to see what percentage of voters in the 2024 presidential election will vote for Biden. We're not confident this poll is representative of the broader voting population, but we still want to see what can be gleaned from it. We're not worried about stability or unconfoundedness, though. This model tells us Biden's support is very likely to be below 50%.
+
+$$ biden_i =  \mu + \epsilon_i $$
+
+```{r}
+tbl_regression(fit_bern, intercept = TRUE)
 ```
 
